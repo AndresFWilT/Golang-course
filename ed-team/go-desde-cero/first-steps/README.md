@@ -34,4 +34,3 @@ To run a go file:
 ```shell
 go run path/file.go
 ```
-
