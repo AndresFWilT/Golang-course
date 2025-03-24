@@ -138,3 +138,17 @@ To clean all packages that are unused, use:
 ```shell
 go mod tidy
 ```
+
+## Import a package with secondary effects
+
+```Go
+package main
+
+import (
+	"fmt"
+	_ "github.com/lib/pq"
+)
+```
+
+this will import the package for secondary effects: it will call the `init` func and will block to not use the exported identifiers inside the package.
+ 
