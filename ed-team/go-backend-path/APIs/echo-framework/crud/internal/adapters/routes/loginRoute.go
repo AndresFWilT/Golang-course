@@ -1,14 +1,14 @@
 package routes
 
 import (
-	"net/http"
+	"github.com/labstack/echo"
 
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/handlers"
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/ports"
 )
 
-func LoginRoutes(mux *http.ServeMux, storage ports.PersonStorager) {
+func LoginRoutes(e *echo.Echo, storage ports.PersonStorager) {
 	loginHandler := handlers.NewLogin(storage)
 
-	mux.HandleFunc("/api/v1/login", loginHandler.Login)
+	e.POST("/api/v1/login", loginHandler.Login)
 }

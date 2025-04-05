@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/google/uuid"
-	"github.com/joho/godotenv"
-	"net/http"
+	"github.com/labstack/echo/middleware"
 	"os"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+	"github.com/labstack/echo"
 
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/routes"
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/certificates"
@@ -27,14 +28,16 @@ func main() {
 		os.Exit(1)
 	}
 	store := saveInMemory.NewMemory()
-	mux := http.NewServeMux()
+	e := echo.New()
+	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
 
-	routes.PersonRoutes(mux, &store)
-	routes.LoginRoutes(mux, &store)
-	console.Log.Success(serverUUID.String(), "Starting server, running on port: %v", 9080)
-	err = http.ListenAndServe(":9080", mux)
+	routes.PersonRoutes(e, &store)
+	routes.LoginRoutes(e, &store)
+	console.Log.Success(serverUUID.String(), "Starting server with echo, running on port: %v", 9080)
+	err = e.Start(":9080")
 	if err != nil {
-		console.Log.Error(serverUUID.String(), "Failing to start server, error: %v", err)
+		console.Log.Error(serverUUID.String(), "Failing to start server with echo, error: %v", err)
 		os.Exit(1)
 	}
 }

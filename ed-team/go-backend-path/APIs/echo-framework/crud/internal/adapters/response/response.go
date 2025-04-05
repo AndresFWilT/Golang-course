@@ -1,20 +1,19 @@
 package response
 
 import (
-	"encoding/json"
-	"net/http"
 	"time"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
+	"github.com/labstack/echo"
 
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/models"
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/utils"
 )
 
-func Generate(w http.ResponseWriter, uuid string, statusCode int, description string, data any) {
+func Generate(c echo.Context, uuid string, statusCode int, description string, data any) error {
 	validUUID := utils.ValidateUUID(uuid)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
+	c.Response().Header().Set("Content-Type", "application/json")
+	c.Response().WriteHeader(statusCode)
 	response := &models.GenericResponse{
 		BaseJSONResponse: models.BaseJSONResponse{
 			StatusCode: statusCode,
@@ -24,17 +23,6 @@ func Generate(w http.ResponseWriter, uuid string, statusCode int, description st
 		Description: description,
 		Data:        data,
 	}
-	jsonGenericResponse, err := json.Marshal(response)
-	if err != nil {
-		console.Log.Warn(validUUID, "Error marshalling the error response: %v", err)
-		return
-	}
-
-	_, err = w.Write(jsonGenericResponse)
-	if err != nil {
-		console.Log.Warn(validUUID, "Error writing the json response: %v", err)
-		return
-	}
-	console.Log.Success(validUUID, "Response generated: %v", string(jsonGenericResponse))
-	return
+	console.Log.Success(validUUID, "Response generated: %v", response)
+	return c.JSON(statusCode, response)
 }

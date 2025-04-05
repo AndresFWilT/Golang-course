@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
+	"github.com/labstack/echo"
 
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/response"
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/models"
@@ -21,121 +21,90 @@ func NewPerson(storage ports.PersonStorager) Person {
 	return Person{storage: storage}
 }
 
-func (p *Person) Create(w http.ResponseWriter, r *http.Request) {
-	requestUUID := utils.ValidateUUID(r.Header.Get("X-RqUID"))
-	console.Log.Info(requestUUID, "Entering Create Person Handler, Body: %v, Headers: %v", r.Body, r.Header)
-	if r.Method != http.MethodPost {
-		response.GenerateError(w, requestUUID, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+func (p *Person) Create(c echo.Context) error {
+	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	console.Log.Info(requestUUID, "Entering Create Person Handler, Body: %v, Headers: %v", c.Request().Body, c.Request().Header)
 
 	data := models.Person{}
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err := c.Bind(&data)
 
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusBadRequest, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
 	err = p.storage.CreatePerson(requestUUID, &data)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusInternalServerError, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, err.Error())
 	}
 
-	response.Generate(w, requestUUID, http.StatusCreated, "Person created", nil)
-
+	return response.Generate(c, requestUUID, http.StatusCreated, "Person created", nil)
 }
 
-func (p *Person) GetAll(w http.ResponseWriter, r *http.Request) {
-	requestUUID := utils.ValidateUUID(r.Header.Get("X-RqUID"))
-	console.Log.Info(requestUUID, "Entering Get All Persons Handler, Headers: %v", r.Header)
-	if r.Method != http.MethodGet {
-		response.GenerateError(w, requestUUID, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+func (p *Person) GetAll(c echo.Context) error {
+	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	console.Log.Info(requestUUID, "Entering Get All Persons Handler, Headers: %v", c.Request().Header)
 
 	persons, err := p.storage.GetAllPersons(requestUUID)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusInternalServerError, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, err.Error())
 	}
 
-	response.Generate(w, requestUUID, http.StatusOK, "All persons obtained", persons)
+	return response.Generate(c, requestUUID, http.StatusOK, "All persons obtained", persons)
 }
 
-func (p *Person) GetById(w http.ResponseWriter, r *http.Request) {
-	requestUUID := utils.ValidateUUID(r.Header.Get("X-RqUID"))
-	console.Log.Info(requestUUID, "Entering Getting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", r.URL.Query().Encode(), r.Body, r.Header)
-	if r.Method != http.MethodGet {
-		response.GenerateError(w, requestUUID, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+func (p *Person) GetById(c echo.Context) error {
+	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	console.Log.Info(requestUUID, "Entering Getting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
-	personId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	personId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusBadRequest, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
 	person, err := p.storage.GetPersonById(requestUUID, personId)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusInternalServerError, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, err.Error())
 	}
 
-	response.Generate(w, requestUUID, http.StatusOK, "Person obtained", person)
+	return response.Generate(c, requestUUID, http.StatusOK, "Person obtained", person)
 }
 
-func (p *Person) Update(w http.ResponseWriter, r *http.Request) {
-	requestUUID := utils.ValidateUUID(r.Header.Get("X-RqUID"))
-	console.Log.Info(requestUUID, "Entering Update Person Handler, RequestParam: %v, Body: %v Headers: %v", r.URL.Query().Encode(), r.Body, r.Header)
-	if r.Method != http.MethodPut {
-		response.GenerateError(w, requestUUID, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+func (p *Person) Update(c echo.Context) error {
+	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	console.Log.Info(requestUUID, "Entering Update Person Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
-	personId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	personId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusBadRequest, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
 	data := models.Person{}
-	err = json.NewDecoder(r.Body).Decode(&data)
+	err = c.Bind(&data)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusBadRequest, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
 	err = p.storage.UpdatePerson(requestUUID, personId, &data)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusInternalServerError, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, err.Error())
 	}
 
-	response.Generate(w, requestUUID, http.StatusOK, "Update person", nil)
+	return response.Generate(c, requestUUID, http.StatusOK, "Update person", nil)
 }
 
-func (p *Person) Delete(w http.ResponseWriter, r *http.Request) {
-	requestUUID := utils.ValidateUUID(r.Header.Get("X-RqUID"))
-	console.Log.Info(requestUUID, "Entering Deleting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", r.URL.Query().Encode(), r.Body, r.Header)
-	if r.Method != http.MethodDelete {
-		response.GenerateError(w, requestUUID, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+func (p *Person) Delete(c echo.Context) error {
+	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	console.Log.Info(requestUUID, "Entering Deleting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
-	personId, err := strconv.Atoi(r.URL.Query().Get("id"))
+	personId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusBadRequest, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
 	err = p.storage.DeletePerson(requestUUID, personId)
 	if err != nil {
-		response.GenerateError(w, requestUUID, http.StatusInternalServerError, err.Error())
-		return
+		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, err.Error())
 	}
 
-	response.Generate(w, requestUUID, http.StatusAccepted, "Person deleted", nil)
+	return response.Generate(c, requestUUID, http.StatusAccepted, "Person deleted", nil)
 }
