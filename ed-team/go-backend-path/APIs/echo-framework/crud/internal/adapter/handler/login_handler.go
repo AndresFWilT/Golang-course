@@ -1,31 +1,31 @@
-package handlers
+package handler
 
 import (
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/shared/validation"
 	"net/http"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
 	"github.com/labstack/echo"
 
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/response"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/models"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/ports"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/tokens"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/utils"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapter/response"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/model"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/port"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/token"
 )
 
 type Login struct {
-	storage ports.PersonStorager
+	storage port.PersonStorer
 }
 
-func NewLogin(storage ports.PersonStorager) Login {
+func NewLogin(storage port.PersonStorer) Login {
 	return Login{storage: storage}
 }
 
 func (l Login) Login(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Login Handler, Body: %v, Headers: %v", c.Request().Body, c.Request().Header)
 
-	data := models.Login{}
+	data := model.Login{}
 	err := c.Bind(&data)
 	if err != nil {
 		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
@@ -37,15 +37,15 @@ func (l Login) Login(c echo.Context) error {
 		return response.GenerateError(c, requestUUID, http.StatusUnauthorized, "Not Authorized")
 	}
 
-	token, err := tokens.GenerateToken(&data)
+	retrievedToken, err := token.Generate(&data)
 	if err != nil {
 		return response.GenerateError(c, requestUUID, http.StatusInternalServerError, "Cannot create token")
 	}
-	dataToken := models.Token{Token: token}
+	dataToken := model.Token{Token: retrievedToken}
 	return response.Generate(c, requestUUID, http.StatusOK, "logged in and returning token", dataToken)
 }
 
 // mocking logic must perform a better approach
-func isLoginValid(data *models.Login) bool {
+func isLoginValid(data *model.Login) bool {
 	return data.Email == "something@gmail.com" && data.Password == "123456"
 }

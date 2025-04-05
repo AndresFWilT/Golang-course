@@ -1,31 +1,31 @@
-package handlers
+package handler
 
 import (
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/shared/validation"
 	"net/http"
 	"strconv"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
 	"github.com/labstack/echo"
 
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/response"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/models"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/ports"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/utils"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapter/response"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/model"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/port"
 )
 
 type Person struct {
-	storage ports.PersonStorager
+	storage port.PersonStorer
 }
 
-func NewPerson(storage ports.PersonStorager) Person {
+func NewPerson(storage port.PersonStorer) Person {
 	return Person{storage: storage}
 }
 
 func (p *Person) Create(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Create Person Handler, Body: %v, Headers: %v", c.Request().Body, c.Request().Header)
 
-	data := models.Person{}
+	data := model.Person{}
 	err := c.Bind(&data)
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (p *Person) Create(c echo.Context) error {
 }
 
 func (p *Person) GetAll(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Get All Persons Handler, Headers: %v", c.Request().Header)
 
 	persons, err := p.storage.GetAllPersons(requestUUID)
@@ -53,7 +53,7 @@ func (p *Person) GetAll(c echo.Context) error {
 }
 
 func (p *Person) GetById(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Getting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
 	personId, err := strconv.Atoi(c.Param("id"))
@@ -70,7 +70,7 @@ func (p *Person) GetById(c echo.Context) error {
 }
 
 func (p *Person) Update(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Update Person Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
 	personId, err := strconv.Atoi(c.Param("id"))
@@ -78,7 +78,7 @@ func (p *Person) Update(c echo.Context) error {
 		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
 	}
 
-	data := models.Person{}
+	data := model.Person{}
 	err = c.Bind(&data)
 	if err != nil {
 		return response.GenerateError(c, requestUUID, http.StatusBadRequest, err.Error())
@@ -93,7 +93,7 @@ func (p *Person) Update(c echo.Context) error {
 }
 
 func (p *Person) Delete(c echo.Context) error {
-	requestUUID := utils.ValidateUUID(c.Request().Header.Get("X-RqUID"))
+	requestUUID := validation.ValidateUUID(c.Request().Header.Get("X-RqUID"))
 	console.Log.Info(requestUUID, "Entering Deleting Person By Id Handler, RequestParam: %v, Body: %v Headers: %v", c.QueryParams(), c.Request().Body, c.Request().Header)
 
 	personId, err := strconv.Atoi(c.Param("id"))

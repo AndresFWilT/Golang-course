@@ -1,4 +1,4 @@
-package certificates
+package certificate
 
 import (
 	"crypto/rsa"
@@ -14,7 +14,7 @@ var (
 	once      sync.Once
 )
 
-func LoadCertificates(privateCertPath, publicCertPath string) error {
+func Load(privateCertPath, publicCertPath string) error {
 	var err error
 	once.Do(func() {
 		err = loadCertificatesFiles(privateCertPath, publicCertPath)

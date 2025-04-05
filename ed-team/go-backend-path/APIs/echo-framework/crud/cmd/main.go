@@ -9,9 +9,9 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/routes"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/certificates"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/saveInMemory"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapter/route"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/certificate"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/memory"
 )
 
 func main() {
@@ -24,18 +24,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = certificates.LoadCertificates(os.Getenv("PRIVATE_CERTIFICATE_KEY_PATH"), os.Getenv("PUBLIC_CERTIFICATE_KEY_PATH"))
+	err = certificate.Load(os.Getenv("PRIVATE_CERTIFICATE_KEY_PATH"), os.Getenv("PUBLIC_CERTIFICATE_KEY_PATH"))
 	if err != nil {
-		console.Log.Error(serverUUID.String(), "cannot load certificates: %v", err)
+		console.Log.Error(serverUUID.String(), "cannot load certificate: %v", err)
 		os.Exit(1)
 	}
-	store := saveInMemory.NewMemory()
+	store := memory.NewMemory()
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 
-	routes.PersonRoutes(e, &store)
-	routes.LoginRoutes(e, &store)
+	route.Person(e, &store)
+	route.Login(e, &store)
 	console.Log.Success(serverUUID.String(), "Starting server with echo, running on port: %v", 9080)
 	err = e.Start(":9080")
 	if err != nil {

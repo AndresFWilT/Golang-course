@@ -1,4 +1,4 @@
-package models
+package model
 
 type Community struct {
 	Name string `json:"name"`

@@ -1,4 +1,4 @@
-package models
+package model
 
 type BaseJSONResponse struct {
 	StatusCode int    `json:"status_code"`

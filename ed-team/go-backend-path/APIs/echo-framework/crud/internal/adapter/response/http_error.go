@@ -1,21 +1,21 @@
 package response
 
 import (
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/shared/validation"
 	"time"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
 	"github.com/labstack/echo"
 
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/models"
-	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/utils"
+	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/domain/model"
 )
 
 func GenerateError(c echo.Context, uuid string, statusCode int, error string) error {
-	validUUID := utils.ValidateUUID(uuid)
+	validUUID := validation.ValidateUUID(uuid)
 	c.Response().Header().Set("Content-Type", "application/json")
 	c.Response().WriteHeader(statusCode)
-	errorResponse := &models.ErrorResponse{
-		BaseJSONResponse: models.BaseJSONResponse{
+	errorResponse := &model.ErrorResponse{
+		BaseJSONResponse: model.BaseJSONResponse{
 			StatusCode: statusCode,
 			DateTime:   time.Now().Format(time.RFC3339),
 			UUID:       validUUID,
