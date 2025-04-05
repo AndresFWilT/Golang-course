@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/labstack/echo/middleware"
 	"os"
 
 	"github.com/AndresFWilT/afwt-clean-go-logger/console"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/adapters/routes"
 	"github.com/AndresFWilT/afwt-clean-go-crud-echo/internal/usecase/authorize/certificates"
@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	// TODO
+	// move the server configuration to the internal/infrastructure/server layer, also put all configurations there.
 	serverUUID := uuid.New()
 	err := godotenv.Load()
 	if err != nil {
