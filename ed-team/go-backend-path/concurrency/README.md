@@ -35,5 +35,5 @@ go MyFunction()
 
 Every Go program always has a Goroutine (main). When we execute the command `go run main.go` we create the goroutine main to execute the main function.
 
-![Fork-Join-Model](/assets/forkjoin-model.png)
+![Fork-Join-Model](./assets/forkjoin-model.png)
 
